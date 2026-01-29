@@ -1,0 +1,564 @@
+{
+  "server": {
+    "name": "whatsapp-mcp-server",
+    "version": "1.0.0",
+    "description": "Model Context Protocol server for WhatsApp Business API integration",
+    "authentication": "OAuth2",
+    "total_tools": 19
+  },
+  "categories": {
+    "templates": {
+      "name": "Template Management",
+      "description": "Tools for creating, managing, and querying WhatsApp message templates",
+      "count": 4
+    },
+    "profile": {
+      "name": "Profile & Phone Number Management",
+      "description": "Tools for retrieving business profile and phone number information",
+      "count": 3
+    },
+    "media": {
+      "name": "Media Management",
+      "description": "Tools for uploading and retrieving media files",
+      "count": 3
+    },
+    "messaging": {
+      "name": "Messaging",
+      "description": "Tools for sending various types of messages (text, media, interactive, etc.)",
+      "count": 9
+    }
+  },
+  "tools": [
+    {
+      "name": "WHATSAPP_CREATE_MESSAGE_TEMPLATE",
+      "category": "templates",
+      "description": "Create a new message template for the WhatsApp Business Account. Templates must be approved by WhatsApp before they can be used. Templates are required for marketing messages and messages sent outside the 24-hour window.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the message template"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language code (e.g., 'en_US', 'es_ES')"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category: MARKETING, UTILITY, or AUTHENTICATION",
+            "enum": ["MARKETING", "UTILITY", "AUTHENTICATION"]
+          },
+          "components": {
+            "type": "array",
+            "description": "Array of template components (HEADER, BODY, FOOTER, BUTTONS)",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": ["name", "language", "category", "components"]
+      }
+    },
+    {
+      "name": "WHATSAPP_DELETE_MESSAGE_TEMPLATE",
+      "category": "templates",
+      "description": "Delete a message template from the WhatsApp Business Account permanently.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "description": "The ID of the template to delete"
+          }
+        },
+        "required": ["template_id"]
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_MESSAGE_TEMPLATES",
+      "category": "templates",
+      "description": "Get all message templates for the WhatsApp Business Account with optional filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "after": {
+            "type": "string",
+            "description": "Pagination cursor"
+          },
+          "category": {
+            "type": "string",
+            "description": "Filter by category"
+          },
+          "language": {
+            "type": "string",
+            "description": "Filter by language"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Number of templates",
+            "default": 25
+          },
+          "name_or_content": {
+            "type": "string",
+            "description": "Search by name or content"
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by status"
+          }
+        }
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_TEMPLATE_STATUS",
+      "category": "templates",
+      "description": "Get the status and details of a specific message template.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "description": "The template ID"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Comma-separated fields",
+            "default": "id,name,status,category,language"
+          }
+        },
+        "required": ["template_id"]
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_BUSINESS_PROFILE",
+      "category": "profile",
+      "description": "Get the business profile information for a WhatsApp Business phone number. Includes description, address, website, and contact info. Uses WHATSAPP_PHONE_NUMBER_ID from .env if not provided.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "string",
+            "description": "Comma-separated list of fields to return",
+            "default": "about,address,description,email,profile_picture_url,websites,vertical"
+          }
+        }
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_PHONE_NUMBER",
+      "category": "profile",
+      "description": "Get details of a specific phone number associated with a WhatsApp Business Account.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "phone_number_id": {
+            "type": "string",
+            "description": "Phone number ID (optional, uses .env if omitted)"
+          },
+          "fields": {
+            "type": "string",
+            "description": "Comma-separated list of fields to return",
+            "default": "id,display_phone_number,verified_name,code_verification_status,quality_rating,platform_type,throughput,webhook_configuration,last_onboarded_time"
+          }
+        }
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_PHONE_NUMBERS",
+      "category": "profile",
+      "description": "Get all phone numbers associated with a WhatsApp Business Account (WABA).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Number of phone numbers to return",
+            "default": 25
+          }
+        }
+      }
+    },
+    {
+      "name": "WHATSAPP_UPLOAD_MEDIA",
+      "category": "media",
+      "description": "Upload media files (images, videos, audio, documents, stickers) to WhatsApp servers. Returns a media ID for use with WHATSAPP_SEND_MEDIA_BY_ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "media_type": {
+            "type": "string",
+            "description": "Type of media being uploaded",
+            "enum": ["image", "video", "audio", "document", "sticker"]
+          },
+          "file_to_upload": {
+            "type": "object",
+            "description": "Local file to upload",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Absolute or relative path to the file"
+              },
+              "filename": {
+                "type": "string",
+                "description": "Optional filename override"
+              },
+              "mime_type": {
+                "type": "string",
+                "description": "Optional MIME type override"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        "required": ["media_type", "file_to_upload"]
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_MEDIA",
+      "category": "media",
+      "description": "Get information about uploaded media including a temporary download URL. The download URL is valid for a short time (typically ~5 minutes).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "media_id": {
+            "type": "string",
+            "description": "The media ID to fetch info for"
+          }
+        },
+        "required": ["media_id"]
+      }
+    },
+    {
+      "name": "WHATSAPP_GET_MEDIA_INFO",
+      "category": "media",
+      "description": "Get metadata about uploaded media without generating a download URL. Useful for checking file size, type, and hash.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "media_id": {
+            "type": "string",
+            "description": "The media ID to fetch metadata for"
+          }
+        },
+        "required": ["media_id"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_MESSAGE",
+      "category": "messaging",
+      "description": "Send a text message to a WhatsApp number. Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format (e.g., +9198xxxxxx)"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text message body"
+          },
+          "preview_url": {
+            "type": "boolean",
+            "description": "Show URL preview (default: false)"
+          },
+          "message_id": {
+            "type": "string",
+            "description": "Optional message ID to reply to"
+          }
+        },
+        "required": ["to_number", "text"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_REPLY",
+      "category": "messaging",
+      "description": "Send a reply to a specific message. Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text message body"
+          },
+          "reply_to_message_id": {
+            "type": "string",
+            "description": "Message ID to reply to"
+          },
+          "preview_url": {
+            "type": "boolean",
+            "description": "Show URL preview (default: false)"
+          }
+        },
+        "required": ["to_number", "reply_to_message_id", "text"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_TEMPLATE_MESSAGE",
+      "category": "messaging",
+      "description": "Send a template message to a WhatsApp number.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "template_name": {
+            "type": "string",
+            "description": "Approved template name"
+          },
+          "language_code": {
+            "type": "string",
+            "description": "Template language (default: en_US)"
+          },
+          "components": {
+            "type": "array",
+            "description": "Optional template components",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": ["to_number", "template_name"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_MEDIA",
+      "category": "messaging",
+      "description": "Send a media message by URL. Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "media_type": {
+            "type": "string",
+            "enum": ["image", "video", "audio", "document", "sticker"]
+          },
+          "link": {
+            "type": "string",
+            "description": "Publicly accessible HTTPS URL to the media"
+          },
+          "caption": {
+            "type": "string",
+            "description": "Optional caption"
+          }
+        },
+        "required": ["to_number", "media_type", "link"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_MEDIA_BY_ID",
+      "category": "messaging",
+      "description": "Send media using a media ID from previously uploaded media. Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "media_type": {
+            "type": "string",
+            "enum": ["image", "video", "audio", "document", "sticker"]
+          },
+          "media_id": {
+            "type": "string",
+            "description": "Media ID from upload or webhooks"
+          },
+          "caption": {
+            "type": "string",
+            "description": "Optional caption"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Optional filename (document only)"
+          },
+          "reply_to_message_id": {
+            "type": "string",
+            "description": "Optional message ID to reply to"
+          }
+        },
+        "required": ["to_number", "media_type", "media_id"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_CONTACTS",
+      "category": "messaging",
+      "description": "Send contacts to a WhatsApp number. Delivered only if recipient has initiated a conversation first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "contacts": {
+            "type": "array",
+            "description": "Array of contact objects (WhatsApp payload format)",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": ["to_number", "contacts"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_LOCATION",
+      "category": "messaging",
+      "description": "Send a location message. Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "latitude": {
+            "type": "string",
+            "description": "Latitude (e.g., 12.9716)"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Longitude (e.g., 77.5946)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Location name"
+          },
+          "address": {
+            "type": "string",
+            "description": "Location address"
+          }
+        },
+        "required": ["to_number", "latitude", "longitude", "name", "address"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_INTERACTIVE_BUTTONS",
+      "category": "messaging",
+      "description": "Send an interactive button message (up to 3 buttons). Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "body_text": {
+            "type": "string",
+            "description": "Main body text"
+          },
+          "buttons": {
+            "type": "array",
+            "description": "Up to 3 buttons: [{id?, title}]",
+            "items": {
+              "type": "object"
+            }
+          },
+          "header_text": {
+            "type": "string",
+            "description": "Optional header"
+          },
+          "footer_text": {
+            "type": "string",
+            "description": "Optional footer"
+          },
+          "reply_to_message_id": {
+            "type": "string",
+            "description": "Optional message ID to reply to"
+          }
+        },
+        "required": ["to_number", "body_text", "buttons"]
+      }
+    },
+    {
+      "name": "WHATSAPP_SEND_INTERACTIVE_LIST",
+      "category": "messaging",
+      "description": "Send an interactive list message (up to 10 options). Delivered only if recipient has texted first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to_number": {
+            "type": "string",
+            "description": "Recipient in international format"
+          },
+          "body_text": {
+            "type": "string",
+            "description": "Main body text"
+          },
+          "button_text": {
+            "type": "string",
+            "description": "Text on the list button"
+          },
+          "sections": {
+            "type": "array",
+            "description": "Sections: [{title?, rows: [{id?, title, description?}]}]",
+            "items": {
+              "type": "object"
+            }
+          },
+          "header_text": {
+            "type": "string",
+            "description": "Optional header"
+          },
+          "footer_text": {
+            "type": "string",
+            "description": "Optional footer"
+          },
+          "reply_to_message_id": {
+            "type": "string",
+            "description": "Optional message ID to reply to"
+          }
+        },
+        "required": ["to_number", "body_text", "button_text", "sections"]
+      }
+    }
+  ],
+  "response_format": {
+    "success": {
+      "successful": true,
+      "data": {}
+    },
+    "error": {
+      "successful": false,
+      "error": "Error message",
+      "data": {}
+    }
+  },
+  "authentication": {
+    "type": "OAuth2",
+    "token_management": "automatic",
+    "token_refresh": "automatic",
+    "token_storage": ".oauth_token_cache.json",
+    "setup_script": "oauth_manager.py"
+  },
+  "requirements": {
+    "python": "3.8+",
+    "dependencies": [
+      "mcp>=1.0.0",
+      "python-dotenv>=1.0.0",
+      "httpx>=0.25.0"
+    ]
+  },
+  "environment_variables": {
+    "required": [
+      "WHATSAPP_CLIENT_ID",
+      "WHATSAPP_CLIENT_SECRET",
+      "WHATSAPP_BUSINESS_ACCOUNT_ID",
+      "WHATSAPP_PHONE_NUMBER_ID"
+    ],
+    "optional": [
+      "WHATSAPP_API_VERSION"
+    ]
+  }
+}

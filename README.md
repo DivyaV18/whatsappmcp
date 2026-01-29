@@ -1,26 +1,28 @@
 # WhatsApp MCP Server
 
-A comprehensive Model Context Protocol (MCP) server for WhatsApp Business API integration. This server provides 19+ tools for managing templates, sending messages, handling media, and interacting with WhatsApp Business accounts—similar to Composio's WhatsApp toolkit.
+A comprehensive Model Context Protocol (MCP) server for WhatsApp Business API integration. This server provides **19 powerful tools** for managing templates, sending messages, handling media, and interacting with WhatsApp Business accounts.
+
+**Built with a clean, modular architecture** - organized by functionality for easy maintenance and extension.
 
 ## 🚀 Features
 
-### Template Management (4 tools)
+### 📋 Template Management (4 tools)
 - ✅ **WHATSAPP_CREATE_MESSAGE_TEMPLATE** - Create new message templates
 - ✅ **WHATSAPP_DELETE_MESSAGE_TEMPLATE** - Delete existing templates
 - ✅ **WHATSAPP_GET_MESSAGE_TEMPLATES** - List all templates with filters
 - ✅ **WHATSAPP_GET_TEMPLATE_STATUS** - Check template approval status
 
-### Profile & Phone Number Management (3 tools)
+### 👤 Profile & Phone Number Management (3 tools)
 - ✅ **WHATSAPP_GET_BUSINESS_PROFILE** - Get business profile information
 - ✅ **WHATSAPP_GET_PHONE_NUMBER** - Get details of a specific phone number
 - ✅ **WHATSAPP_GET_PHONE_NUMBERS** - List all phone numbers in your account
 
-### Media Management (3 tools)
+### 📎 Media Management (3 tools)
 - ✅ **WHATSAPP_UPLOAD_MEDIA** - Upload media files to WhatsApp servers
 - ✅ **WHATSAPP_GET_MEDIA** - Get media info with download URL (valid 5 min)
 - ✅ **WHATSAPP_GET_MEDIA_INFO** - Get media metadata without download URL
 
-### Messaging (9 tools)
+### 💬 Messaging (9 tools)
 - ✅ **WHATSAPP_SEND_MESSAGE** - Send plain text messages
 - ✅ **WHATSAPP_SEND_REPLY** - Send contextual replies to messages
 - ✅ **WHATSAPP_SEND_TEMPLATE_MESSAGE** - Send approved template messages
@@ -34,11 +36,14 @@ A comprehensive Model Context Protocol (MCP) server for WhatsApp Business API in
 ## 📋 Prerequisites
 
 - **Python 3.8+** installed
-- **WhatsApp Business API credentials** from [Meta for Developers](https://developers.facebook.com/):
-  - **Bearer Token** (API Key) - Temporary or permanent access token
-  - **WhatsApp Business Account ID (WABA ID)** - Required for template operations
-  - **Phone Number ID** - Required for messaging operations
+- **WhatsApp Business API OAuth2 credentials** from [Meta for Developers](https://developers.facebook.com/):
+  - **Client ID** (App ID)
+  - **Client Secret** (App Secret)
+  - **WhatsApp Business Account ID (WABA ID)**
+  - **Phone Number ID**
 - **MCP Inspector** or any MCP-compatible client
+
+> **Note**: This server uses **OAuth2 authentication only**. Tokens are automatically managed and refreshed.
 
 ## 🔧 Installation
 
@@ -51,7 +56,9 @@ pip install -r requirements.txt
 
 ## ⚙️ Configuration
 
-1. **Create a `.env` file** in the project root:
+### Step 1: Create `.env` File
+
+Create a `.env` file in the project root:
 
 ```bash
 # Windows (PowerShell)
@@ -61,41 +68,83 @@ New-Item -Path .env -ItemType File
 touch .env
 ```
 
-2. **Copy configuration from `env.example`** and fill in your credentials:
+### Step 2: Add Your Credentials
+
+Copy the template from `env.example` and fill in your OAuth2 credentials:
 
 ```env
-# Your WhatsApp Business API Bearer Token (API Key)
-WHATSAPP_BEARER_TOKEN=your_bearer_token_here
+# OAuth2 Configuration (REQUIRED)
+WHATSAPP_CLIENT_ID=your_client_id_here
+WHATSAPP_CLIENT_SECRET=your_client_secret_here
 
-# Your WhatsApp Business Account ID (WABA ID) - used for template creation
+# WhatsApp Business IDs (REQUIRED)
 WHATSAPP_BUSINESS_ACCOUNT_ID=your_whatsapp_business_account_id_here
-
-# Your WhatsApp Business Phone Number ID - used for messaging
 WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id_here
 
-# WhatsApp API Version (default: v18.0)
+# Optional (has defaults)
 WHATSAPP_API_VERSION=v18.0
 ```
 
-### How to Get Credentials
+### Step 3: Get OAuth2 Credentials
 
-1. Go to [Meta for Developers](https://developers.facebook.com/)
-2. Create or select your app
-3. Add **WhatsApp** product to your app
-4. Navigate to **WhatsApp → API Setup**
-5. Copy:
-   - **Temporary Access Token** (or generate a permanent one)
-   - **WhatsApp Business Account ID** (WABA ID)
-   - **Phone Number ID**
+#### From Meta for Developers:
 
-> ⚠️ **Security Note**: Never commit your `.env` file to version control. It contains sensitive credentials.
+1. **Go to [Meta for Developers](https://developers.facebook.com/)**
+   - Sign in with your Facebook account
+
+2. **Create or Select Your App**
+   - Navigate to **My Apps** → **Create App** (or select existing)
+   - Choose **"Business"** as the app type
+
+3. **Add WhatsApp Product**
+   - In your app dashboard, find **"WhatsApp"** in products
+   - Click **"Set up"** or **"Get Started"**
+
+4. **Get Your Credentials**
+   - **Client ID & Secret**: Go to **Settings → Basic**
+     - **App ID** → `WHATSAPP_CLIENT_ID`
+     - **App Secret** → `WHATSAPP_CLIENT_SECRET` (click "Show")
+   - **WABA ID**: Go to **WhatsApp → API Setup**
+     - Copy **WhatsApp Business Account ID** → `WHATSAPP_BUSINESS_ACCOUNT_ID`
+   - **Phone Number ID**: Go to **WhatsApp → API Setup**
+     - Copy **Phone number ID** → `WHATSAPP_PHONE_NUMBER_ID`
+     - If not visible, add a phone number first in **WhatsApp → Phone Numbers**
+
+5. **Configure OAuth Redirect URI**
+   - Go to **Settings → Basic**
+   - Under **"Valid OAuth Redirect URIs"**, add:
+     - `http://localhost:8080/callback` (for automated flow)
+   - Click **"Save Changes"**
+
+### Step 4: Complete OAuth2 Authorization
+
+**Automated Flow (Recommended):**
+
+```bash
+python oauth_manager.py
+```
+
+This will:
+1. Open your browser automatically
+2. Prompt you to authorize the application
+3. Capture the callback automatically
+4. Save the token to `.oauth_token_cache.json`
+
+**Manual Flow (Alternative):**
+
+If automated flow doesn't work:
+1. Run `python oauth_manager.py`
+2. Copy the authorization URL from the output
+3. Visit it in your browser
+4. Copy the authorization code from the callback URL
+5. Paste it when prompted
 
 ## 🎯 Usage
 
 ### Running the Server
 
 ```bash
-python server.py
+python run_server.py
 ```
 
 The server runs on **stdio** and is ready to accept connections from MCP clients.
@@ -104,19 +153,71 @@ The server runs on **stdio** and is ready to accept connections from MCP clients
 
 1. **Start the server:**
 ```bash
-python server.py
+python run_server.py
 ```
 
-2. **In MCP Inspector**, configure the server:
+2. **Configure MCP Inspector:**
    - **Command**: `python`
-   - **Args**: `["server.py"]`
+   - **Args**: `["run_server.py"]`
    - **Working Directory**: Path to this project directory
 
 3. **Connect** - MCP Inspector will automatically discover and list all 19 available tools
 
 4. **Test tools** directly from MCP Inspector's UI!
 
-## 📚 Complete API Reference
+### Using with Cursor/Claude Desktop
+
+Add to your MCP configuration (`mcp_config.json` or Cursor settings):
+
+```json
+{
+  "mcpServers": {
+    "whatsapp": {
+      "command": "python",
+      "args": ["run_server.py"],
+      "cwd": "/path/to/whatsappmcp",
+      "env": {}
+    }
+  }
+}
+```
+
+## 📁 Project Structure
+
+```
+whatsappmcp/
+├── run_server.py              # Entry point script
+├── oauth_manager.py           # OAuth2 token management & authorization flow
+├── requirements.txt           # Python dependencies
+├── mcp_config.json           # MCP server configuration example
+├── env.example               # Environment variables template
+├── .env                      # Your credentials (create from env.example)
+├── .oauth_token_cache.json   # Cached OAuth tokens (auto-generated)
+├── .gitignore                # Git ignore rules
+├── README.md                  # This file
+└── src/
+    └── whatsapp_mcp/
+        ├── __init__.py
+        ├── main.py            # Main MCP server & routing
+        ├── config.py          # Configuration & environment loading
+        ├── utils.py           # Shared utilities (token handling, responses)
+        └── tools/             # Tool implementations (organized by category)
+            ├── __init__.py
+            ├── templates.py   # Template management (4 tools)
+            ├── profile.py     # Profile & phone numbers (3 tools)
+            ├── media.py       # Media management (3 tools)
+            └── messaging.py   # Messaging tools (9 tools)
+```
+
+### Architecture Overview
+
+- **Modular Design**: Tools are organized by functionality in separate modules
+- **Centralized Routing**: `main.py` handles tool discovery and routing
+- **Shared Utilities**: Common functions (token validation, error handling) in `utils.py`
+- **Configuration Management**: Environment variables loaded in `config.py`
+- **OAuth2 Integration**: Automatic token refresh and management
+
+## 📚 API Reference
 
 ### Template Management
 
@@ -174,14 +275,14 @@ Get the status and details of a specific template.
 Get business profile information.
 
 **Parameters:**
-- `phone_number_id` (string, required) - Phone number ID
+- `phone_number_id` (string, optional) - Uses `WHATSAPP_PHONE_NUMBER_ID` from `.env` if not provided
 - `fields` (string, optional) - Comma-separated fields (default: `about,address,description,email,profile_picture_url,websites,vertical`)
 
 #### WHATSAPP_GET_PHONE_NUMBER
 Get details of a specific phone number.
 
 **Parameters:**
-- `phone_number_id` (string, required) - Phone number ID
+- `phone_number_id` (string, optional) - Uses `WHATSAPP_PHONE_NUMBER_ID` from `.env` if not provided
 - `fields` (string, optional) - Comma-separated fields to return
 
 #### WHATSAPP_GET_PHONE_NUMBERS
@@ -203,7 +304,6 @@ Upload media files to WhatsApp servers. Returns a media ID for use with `WHATSAP
 - **Stickers**: WebP (max 500KB, 512x512 pixels)
 
 **Parameters:**
-- `phone_number_id` (string, required) - Phone number ID
 - `media_type` (string, required) - One of: `image`, `video`, `audio`, `document`, `sticker`
 - `file_to_upload` (object, required) - File object:
   - `path` (string, required) - Absolute or relative file path
@@ -213,15 +313,12 @@ Upload media files to WhatsApp servers. Returns a media ID for use with `WHATSAP
 **Example:**
 ```json
 {
-  "phone_number_id": "123456789",
   "media_type": "image",
   "file_to_upload": {
     "path": "D:\\images\\photo.jpg"
   }
 }
 ```
-
-**Response:** Returns `id` (media_id) that can be used with `WHATSAPP_SEND_MEDIA_BY_ID`.
 
 #### WHATSAPP_GET_MEDIA
 Get media information including a temporary download URL (valid for 5 minutes).
@@ -241,7 +338,6 @@ Get media metadata (size, type, hash) without download URL.
 Send a plain text message.
 
 **Parameters:**
-- `phone_number_id` (string, required) - Sender phone number ID
 - `to_number` (string, required) - Recipient in international format (e.g., `+919876543210`)
 - `text` (string, required) - Message text
 - `preview_url` (boolean, optional, default: `false`) - Show URL preview
@@ -250,7 +346,6 @@ Send a plain text message.
 **Example:**
 ```json
 {
-  "phone_number_id": "123456789",
   "to_number": "+919876543210",
   "text": "Hello from WhatsApp MCP!",
   "preview_url": false
@@ -263,7 +358,6 @@ Send a plain text message.
 Send a contextual reply to a specific message.
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `text` (string, required)
 - `reply_to_message_id` (string, required) - Message ID to reply to
@@ -273,7 +367,6 @@ Send a contextual reply to a specific message.
 Send an approved template message.
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `template_name` (string, required) - Approved template name
 - `language_code` (string, optional, default: `en_US`) - Template language
@@ -282,10 +375,17 @@ Send an approved template message.
 **Example:**
 ```json
 {
-  "phone_number_id": "123456789",
   "to_number": "+919876543210",
   "template_name": "welcome_template",
-  "language_code": "en_US"
+  "language_code": "en_US",
+  "components": [
+    {
+      "type": "body",
+      "parameters": [
+        {"type": "text", "text": "John"}
+      ]
+    }
+  ]
 }
 ```
 
@@ -293,7 +393,6 @@ Send an approved template message.
 Send media using a publicly accessible URL.
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `media_type` (string, required) - One of: `image`, `video`, `audio`, `document`, `sticker`
 - `link` (string, required) - Publicly accessible HTTPS URL
@@ -303,7 +402,6 @@ Send media using a publicly accessible URL.
 Send media using a previously uploaded media ID (more efficient).
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `media_type` (string, required) - One of: `image`, `video`, `audio`, `document`, `sticker`
 - `media_id` (string, required) - Media ID from upload
@@ -315,14 +413,12 @@ Send media using a previously uploaded media ID (more efficient).
 Send contact cards.
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `contacts` (array, required) - Array of contact objects
 
 **Example:**
 ```json
 {
-  "phone_number_id": "123456789",
   "to_number": "+919876543210",
   "contacts": [
     {
@@ -346,7 +442,6 @@ Send contact cards.
 Send a location message.
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `latitude` (string, required) - Latitude (e.g., `12.9716`)
 - `longitude` (string, required) - Longitude (e.g., `77.5946`)
@@ -357,7 +452,6 @@ Send a location message.
 Send an interactive button message (up to 3 buttons).
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `body_text` (string, required) - Main body text
 - `buttons` (array, required) - Up to 3 buttons, each with `id` and `title`
@@ -368,7 +462,6 @@ Send an interactive button message (up to 3 buttons).
 **Example:**
 ```json
 {
-  "phone_number_id": "123456789",
   "to_number": "+919876543210",
   "body_text": "Choose an option:",
   "buttons": [
@@ -382,7 +475,6 @@ Send an interactive button message (up to 3 buttons).
 Send an interactive list message (up to 10 options across sections).
 
 **Parameters:**
-- `phone_number_id` (string, required)
 - `to_number` (string, required)
 - `body_text` (string, required) - Main body text
 - `button_text` (string, required) - Text on the list button
@@ -394,7 +486,6 @@ Send an interactive list message (up to 10 options across sections).
 **Example:**
 ```json
 {
-  "phone_number_id": "123456789",
   "to_number": "+919876543210",
   "body_text": "Select an option:",
   "button_text": "View Options",
@@ -414,6 +505,7 @@ Send an interactive list message (up to 10 options across sections).
 
 All tools return a consistent JSON response:
 
+**Success:**
 ```json
 {
   "successful": true,
@@ -423,50 +515,79 @@ All tools return a consistent JSON response:
 }
 ```
 
-On error:
+**Error:**
 ```json
 {
   "successful": false,
   "error": "Error message here",
   "data": {
-    // Additional error details
+    // Additional error details (if available)
   }
 }
 ```
+
+## 🔐 OAuth2 Token Management
+
+### Automatic Token Refresh
+
+The server automatically refreshes tokens before they expire:
+- Tokens are checked on every API call
+- If a token expires within 1 day, it's automatically refreshed
+- New tokens are valid for 60 days
+- Tokens are cached in `.oauth_token_cache.json`
+
+### Manual Token Refresh
+
+If you need to manually refresh your token:
+
+```bash
+python oauth_manager.py
+```
+
+This will:
+1. Check if your current token is expiring soon
+2. Automatically refresh it if needed
+3. Save the new token to `.oauth_token_cache.json`
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-#### 1. **"WHATSAPP_BEARER_TOKEN is not set"**
-- Ensure your `.env` file exists and contains `WHATSAPP_BEARER_TOKEN`
-- Restart the server after updating `.env`
+#### 1. **"OAuth2 token not available"**
+- **Solution**: Run `python oauth_manager.py` to complete authorization
+- Ensure `.env` file has `WHATSAPP_CLIENT_ID` and `WHATSAPP_CLIENT_SECRET`
 
-#### 2. **"Error validating access token: Session has expired" (OAuthException, code 190)**
-- Your temporary access token has expired
-- Generate a new token from [Meta for Developers](https://developers.facebook.com/apps/)
-- Update `.env` and restart the server
+#### 2. **"Error validating access token: Session has expired"**
+- **Solution**: Token has expired. Run `python oauth_manager.py` to refresh
+- The server should auto-refresh, but manual refresh may be needed
 
 #### 3. **"Recipient phone number not in allowed list" (Code 131030)**
-- This is a **sandbox limitation**
-- Add the recipient number to the allowed list:
-  1. Go to Meta for Developers → Your App → WhatsApp → API Setup
-  2. Add recipient phone number
-  3. Verify the number
-- Or ensure the recipient has sent you a message first
+- **Solution**: This is a sandbox limitation
+- Add recipient number in Meta Dashboard → WhatsApp → API Setup → "To" field
+- Or ensure recipient has sent you a message first (24-hour window)
 
-#### 4. **"Invalid parameter" / "Missing both components and library template name"**
-- For template creation, ensure `components` is a valid non-empty array
-- At minimum, include a `BODY` component
+#### 4. **"WHATSAPP_PHONE_NUMBER_ID is not set"**
+- **Solution**: Add `WHATSAPP_PHONE_NUMBER_ID` to your `.env` file
+- Get it from Meta Dashboard → WhatsApp → API Setup
 
-#### 5. **"Unsupported post request. Object with ID does not exist"**
-- Verify your `phone_number_id` is correct
-- Ensure you're using the correct ID (not WABA ID) for messaging operations
+#### 5. **"WHATSAPP_BUSINESS_ACCOUNT_ID is not set"**
+- **Solution**: Add `WHATSAPP_BUSINESS_ACCOUNT_ID` to your `.env` file
+- Get it from Meta Dashboard → WhatsApp → API Setup
 
-#### 6. **File not found (WHATSAPP_UPLOAD_MEDIA)**
-- Use absolute paths or ensure relative paths are correct
+#### 6. **OAuth callback not working**
+- **Solution**: Ensure `http://localhost:8080/callback` is in your app's Valid OAuth Redirect URIs
+- Check that your app is in Development Mode (not Live Mode)
+- Try the manual flow if automated flow fails
+
+#### 7. **File not found (WHATSAPP_UPLOAD_MEDIA)**
+- **Solution**: Use absolute paths or ensure relative paths are correct
 - Check file permissions
 - Verify the file exists and is readable
+
+#### 8. **Import errors**
+- **Solution**: Ensure you're running from the project root directory
+- Check that all dependencies are installed: `pip install -r requirements.txt`
+- Verify Python version is 3.8+
 
 ### Debugging Tips
 
@@ -474,62 +595,136 @@ On error:
 2. **Verify credentials** - Use `WHATSAPP_GET_PHONE_NUMBERS` to test your token
 3. **Test with MCP Inspector** - Use the UI to test tools and see full error responses
 4. **Check API version** - Ensure `WHATSAPP_API_VERSION` matches your account's supported version
+5. **Check token file** - Verify `.oauth_token_cache.json` exists and contains valid token
 
-## 📁 Project Structure
-
-```
-whatsappmcp/
-├── server.py           # Main MCP server implementation (all 19 tools)
-├── requirements.txt    # Python dependencies
-├── .env               # Environment variables (create from env.example)
-├── env.example        # Example environment file
-├── .gitignore         # Git ignore file
-└── README.md          # This file
-```
-
-## 🔐 Security Best Practices
+## 🔒 Security Best Practices
 
 1. **Never commit `.env`** - Already in `.gitignore`
-2. **Use permanent tokens** - For production, generate long-lived tokens
-3. **Rotate tokens regularly** - Update tokens periodically
-4. **Limit token scope** - Only grant necessary permissions
-5. **Monitor API usage** - Check Meta Business Suite for unusual activity
+2. **Never commit `.oauth_token_cache.json`** - Already in `.gitignore`
+3. **Use environment variables** - Never hardcode credentials
+4. **Rotate tokens regularly** - Update tokens periodically for security
+5. **Limit token scope** - Only grant necessary permissions
+6. **Monitor API usage** - Check Meta Business Suite for unusual activity
+7. **Keep dependencies updated** - Regularly update packages for security patches
+
+## 🏗️ Development
+
+### Project Structure
+
+The project follows a modular architecture:
+
+- **`src/whatsapp_mcp/main.py`**: Main MCP server, tool discovery, and routing
+- **`src/whatsapp_mcp/config.py`**: Configuration loading and OAuth manager initialization
+- **`src/whatsapp_mcp/utils.py`**: Shared utilities (token validation, response formatting)
+- **`src/whatsapp_mcp/tools/`**: Tool implementations organized by category
+  - `templates.py`: Template management tools
+  - `profile.py`: Profile and phone number tools
+  - `media.py`: Media management tools
+  - `messaging.py`: Messaging tools
+
+### Adding New Tools
+
+1. **Add tool definition** in the appropriate `tools/*.py` file:
+   ```python
+   Tool(
+       name="WHATSAPP_NEW_TOOL",
+       description="Tool description",
+       inputSchema={...}
+   )
+   ```
+
+2. **Add handler function**:
+   ```python
+   async def handle_new_tool(arguments: dict[str, Any]) -> Sequence:
+       token = await get_valid_token()
+       if not token:
+           return create_error_response(get_token_error_message())
+       # Implementation...
+   ```
+
+3. **Update handler router** in the same file:
+   ```python
+   async def handle_category_tool(name: str, arguments: dict[str, Any]) -> Sequence:
+       if name == "WHATSAPP_NEW_TOOL":
+           return await handle_new_tool(arguments)
+       # ...
+   ```
+
+4. **Export in `tools/__init__.py`** (if needed)
+
+5. **Add to tool set** in `main.py`:
+   ```python
+   CATEGORY_TOOLS = {
+       "WHATSAPP_NEW_TOOL",
+       # ...
+   }
+   ```
+
+6. **Update routing** in `main.py`:
+   ```python
+   if name in CATEGORY_TOOLS:
+       return await handle_category_tool(name, arguments)
+   ```
+
+### Running Tests
+
+```bash
+# Test tool discovery
+python -c "import sys; sys.path.insert(0, 'src'); from whatsapp_mcp.main import list_tools; import asyncio; tools = asyncio.run(list_tools()); print(f'Found {len(tools)} tools')"
+
+# Test imports
+python -c "import sys; sys.path.insert(0, 'src'); from whatsapp_mcp.tools import *; print('All imports successful')"
+```
 
 ## 📖 References
 
-- [Composio WhatsApp Toolkit](https://docs.composio.dev/toolkits/whatsapp) - Inspiration for this project
 - [WhatsApp Business API Documentation](https://developers.facebook.com/docs/whatsapp) - Official API docs
 - [Model Context Protocol](https://modelcontextprotocol.io) - MCP specification
 - [Meta for Developers](https://developers.facebook.com/) - Get your credentials
+- [MCP Inspector](https://github.com/modelcontextprotocol/inspector) - Test your MCP server
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+### Contribution Guidelines
+
+1. Follow the existing code structure and organization
+2. Add tools to the appropriate category module
+3. Include proper error handling
+4. Update documentation for new tools
+5. Test your changes thoroughly
+
 ## 📝 License
 
 This project is open source and available for use.
 
-## ⚡ Quick Start Example
+## ⚡ Quick Start
 
-1. **Install:**
+1. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
 2. **Configure `.env`:**
 ```env
-WHATSAPP_BEARER_TOKEN=your_token
+WHATSAPP_CLIENT_ID=your_client_id
+WHATSAPP_CLIENT_SECRET=your_client_secret
 WHATSAPP_BUSINESS_ACCOUNT_ID=your_waba_id
 WHATSAPP_PHONE_NUMBER_ID=your_phone_id
 ```
 
-3. **Run:**
+3. **Complete OAuth flow:**
 ```bash
-python server.py
+python oauth_manager.py
 ```
 
-4. **Connect MCP Inspector** and start using the tools!
+4. **Run the server:**
+```bash
+python run_server.py
+```
+
+5. **Connect MCP Inspector** and start using the tools!
 
 ---
 

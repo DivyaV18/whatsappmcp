@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "whatsapp": {
+      "command": "python",
+      "args": ["run_server.py"],
+      "cwd": "D:/clg files/PROJECTS/whatsappmcp",
+      "env": {}
+    }
+  }
+}
